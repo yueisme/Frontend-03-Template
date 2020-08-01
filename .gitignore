@@ -1,0 +1,10 @@
+### Windows template
+# Windows thumbnail cache files
+Thumbs.db
+ehthumbs.db
+ehthumbs_vista.db
+
+### macOS template
+*.DS_Store
+.AppleDouble
+.LSOverride
