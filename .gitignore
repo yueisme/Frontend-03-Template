@@ -8,3 +8,9 @@ ehthumbs_vista.db
 *.DS_Store
 .AppleDouble
 .LSOverride
+
+.idea
+*.iml
+*.iws
+*.ipr
+node_modules/
