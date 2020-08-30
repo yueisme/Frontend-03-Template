@@ -1,0 +1,5 @@
+思考题目：
+为什么 first-letter 可以设置 float 之类的，而 first-line 不行呢？
+
+first-line是排版中一整行，需要占满整个行，表现为行级元素，内容也是随着容器动态尺寸改变重新匹配。
+如果加上float/margin/padding/border会打破文档流的排版，这使得浏览器开发者难以实现匹配。
