@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <title>TicTacToe</title>
+  <style>
+    #board {
+      width: 300px;
+      height: 300px;
+      display: flex;
+      flex-wrap: wrap;
+    }
+
+    #board .pieces {
+      width: 100px;
+      height: 100px;
+      background-color: #4caf50;
+      border: 2px solid white;
+      box-sizing: border-box;
+      display: inline-flex;
+      vertical-align: middle;
+      justify-content: center;
+      align-items: center;
+      font-size: 50px;
+    }
+  </style>
+  <script>
+    let chessboard = [
+      [0, 0, 2],
+      [0, 1, 0],
+      [0, 0, 0],
+    ];
+    let gamer = 1;
+    
+    function show() {
+      let board = document.getElementById('board');
+      let frag = document.createDocumentFragment();
+      for (let i = 0; i < chessboard.length; i++) {
+        let row = chessboard[i];
+        for (let j = 0; j < row.length; j++) {
+          let cell = row[j];
+          let ele = document.createElement('div');
+          if (cell !== 0) {
+            let txt = cell === 2 ? "❌" : "⭕️";
+            ele.appendChild(document.createTextNode(txt));
+          }
+          ele.classList.add('pieces');
+          ele.addEventListener('click', () => { place(i, j); });
+          frag.append(ele);
+        }
+      }
+      board.innerHTML = '';
+      board.append(frag);
+    }
+
+    function place(x, y) {
+      console.log(x, y);
+      chessboard[x][y] = gamer;
+      show();
+      if (check(chessboard, gamer)) {
+        let txt = gamer === 2 ? "❌" : "⭕️";
+        alert(txt + ' is winner');
+        //document.location.reload()
+      }
+      gamer = 3 - gamer;
+      if (willWin(chessboard, gamer)) {
+        let txt = gamer === 2 ? "❌" : "⭕️";
+        console.log(txt + ' will win');
+      }
+
+    }
+
+    function check(pattern, _gamer) {
+
+      for (let i = 0; i < pattern.length; i++) {
+        let iswin = pattern[i].every(c => c === _gamer);
+        if (iswin) {
+          return true;
+        }
+      }
+
+      for (let j = 0; j < pattern.length; j++) {
+        let iswin = true;
+        for (let i = 0; i < pattern.length; i++) {
+          if (pattern[i][j] !== _gamer) {
+            iswin = false;
+          }
+        }
+        if (iswin) {
+          return true;
+        }
+      }
+
+      {
+        let iswin = true;
+        for (let i = 0; i < pattern.length; i++) {
+          if (pattern[i][2 - i] !== _gamer) {
+            iswin = false;
+          }
+        }
+        if (iswin) {
+          return true;
+        }
+      }
+
+      {
+        let iswin = true;
+        for (let i = 0; i < pattern.length; i++) {
+          if (pattern[i][i] !== _gamer) {
+            iswin = false;
+          }
+        }
+        if (iswin) {
+          return true;
+        }
+      }
+    }
+
+    function clone(pattern) {
+      return JSON.parse(JSON.stringify(pattern));
+    }
+
+    function willWin(pattern, _gamer) {
+      for (let i = 0; i < pattern.length; i++) {
+        let row = pattern[i];
+        for (let j = 0; j < row.length; j++) {
+          let cell = row[j];
+          if (pattern[i][j]) {
+            continue;
+          }
+          let tmp = clone(pattern);
+          tmp[i][j] = _gamer;
+          if (check(tmp, _gamer)) {
+            console.log(i, j);
+            return [i, j];
+          }
+        }
+      }
+      return null;
+    }
+
+    function bestChoice(pattern, _gamer) {
+      let p = willWin(pattern, _gamer);
+      if (p) {
+        return {
+          point: p,
+          result: 1,
+        };
+      }
+      let result = -2;
+      let point= null;
+
+      for (let i = 0; i < pattern.length; i++) {
+        let row = pattern[i];
+        for (let j = 0; j < row.length; j++) {
+          if (pattern[i][j]) {
+            continue;
+          }
+          let tmp = clone(pattern);
+          tmp[i][j] = _gamer;
+          let r = bestChoice(tmp, 3 - _gamer).result;
+
+          if (- r > result) {
+            result = - r;
+            point = [i, j];
+          }
+        }
+      }
+      return {
+        point,
+        result:point?result:0,
+      };
+    }
+
+    window.addEventListener('load', function () {
+      show();
+      console.log(bestChoice(chessboard,gamer));
+    });
+  </script>
+
+</head>
+
+<body>
+  <div id="board">
+  </div>
+
+</body>
+
+</html>

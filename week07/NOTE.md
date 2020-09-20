@@ -161,7 +161,7 @@ target.addEventListener(type, listener [, useCapture]);
 #### 事件的冒泡和捕获
 这是浏览器的事件处理过程，捕获先于冒泡阶段。计算机把操作设备的坐标转换为具体的元素上事件的过程称为捕获。冒泡是确定了发生了事件的元素后，从DOM树层级中由内向外，向根节点方向触发。
 
-**在最终的元素中，冒泡还是捕获发生事件回调的顺序取决于监听的顺序**
+**在最终的元素中，称为目标阶段target phase，是介于捕获和冒泡之间的一个阶段。冒泡还是捕获发生事件回调的顺序取决于监听的顺序：**
 
 ```html
 <div id="outer" style="background-color: cornflowerblue;width:100px;height:100px;position: relative;top:50px;opacity: 0.8;color:white">
@@ -186,6 +186,12 @@ target.addEventListener(type, listener [, useCapture]);
   */
 </script>
 ```
+
+![image](https://www.w3.org/TR/DOM-Level-3-Events/images/eventflow.svg)
+
+> https://zh.javascript.info/bubbling-and-capturing
+> 
+> https://www.w3.org/TR/DOM-Level-3-Events/#dom-event-architecture
 
 ### DOM API - Range
 

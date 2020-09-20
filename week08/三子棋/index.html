@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <title>TicTacToe</title>
+  <style>
+    #board {
+      width: 300px;
+      height: 300px;
+      display: flex;
+      flex-wrap: wrap;
+    }
+
+    #board .pieces {
+      width: 100px;
+      height: 100px;
+      background-color: #4caf50;
+      border: 2px solid white;
+      box-sizing: border-box;
+      display: inline-flex;
+      vertical-align: middle;
+      justify-content: center;
+      align-items: center;
+      font-size: 50px;
+    }
+  </style>
+  <script>
+    let chessboard = [
+      [0, 0, 0],
+      [0, 0, 0],
+      [0, 0, 0],
+    ];
+    let gamer = 1;
+
+    function show() {
+      let board = document.getElementById('board');
+      let frag = document.createDocumentFragment();
+      for (let i = 0; i < chessboard.length; i++) {
+        let row = chessboard[i];
+        for (let j = 0; j < row.length; j++) {
+          let cell = row[j];
+          let ele = document.createElement('div');
+          if (cell !== 0) {
+            let txt = cell === 2 ? "❌" : "⭕️";
+            ele.appendChild(document.createTextNode(txt));
+          }
+          ele.classList.add('pieces');
+          ele.addEventListener('click', () => { userMove(i, j); });
+          frag.append(ele);
+        }
+      }
+      board.innerHTML = '';
+      board.append(frag);
+    }
+
+    function userMove(x, y) {
+      if (chessboard[x][y]) {
+        return;
+      }
+      chessboard[x][y] = gamer;
+      show();
+      if (check(chessboard, gamer)) {
+        let txt = gamer === 2 ? "❌" : "⭕️";
+        alert(txt + ' is winner');
+        //document.location.reload()
+      }
+      gamer = 3 - gamer;
+      aiMove();
+    }
+
+    function aiMove() {
+      let choice = bestChoice(chessboard, gamer, 1);
+      if (choice.point) {
+        chessboard[choice.point[0]][choice.point[1]] = gamer;
+      }
+      show();
+      if (check(chessboard, gamer)) {
+        let txt = gamer === 2 ? "❌" : "⭕️";
+        alert(txt + ' is winner');
+      }
+      gamer = 3 - gamer;
+    }
+
+    function check(pattern, _gamer) {
+
+      for (let i = 0; i < pattern.length; i++) {
+        let iswin = pattern[i].every(c => c === _gamer);
+        if (iswin) {
+          return true;
+        }
+      }
+
+      for (let j = 0; j < pattern.length; j++) {
+        let iswin = true;
+        for (let i = 0; i < pattern.length; i++) {
+          if (pattern[i][j] !== _gamer) {
+            iswin = false;
+          }
+        }
+        if (iswin) {
+          return true;
+        }
+      }
+
+      {
+        let iswin = true;
+        for (let i = 0; i < pattern.length; i++) {
+          if (pattern[i][2 - i] !== _gamer) {
+            iswin = false;
+          }
+        }
+        if (iswin) {
+          return true;
+        }
+      }
+
+      {
+        let iswin = true;
+        for (let i = 0; i < pattern.length; i++) {
+          if (pattern[i][i] !== _gamer) {
+            iswin = false;
+          }
+        }
+        if (iswin) {
+          return true;
+        }
+      }
+    }
+
+    function clone(pattern) {
+      return JSON.parse(JSON.stringify(pattern));
+    }
+
+    //本次下子能否获胜
+    function willWin(pattern, _gamer) {
+      for (let i = 0; i < pattern.length; i++) {
+        let row = pattern[i];
+        for (let j = 0; j < row.length; j++) {
+          let cell = row[j];
+          if (pattern[i][j]) {
+            continue;
+          }
+          let tmp = clone(pattern);
+          tmp[i][j] = _gamer;
+          if (check(tmp, _gamer)) {
+            //console.log(i, j);
+            return [i, j];
+          }
+        }
+      }
+      return null;
+    }
+
+    /*
+      为_gamer做出最佳决策，返回最合适的落子位置
+    */
+    function bestChoice(pattern, _gamer, depth) {
+      console.log('depth',depth);
+      //能否直接获胜，第一层策略
+      let p = willWin(pattern, _gamer);
+      if (p) {
+        return {
+          point: p,
+          result: 1,
+        };
+      }
+      //第二层策略，查找别输的位置
+      let result = -2;
+      let point = null;
+      
+      outer: for (let i = 0; i < pattern.length; i++) {
+        let row = pattern[i];
+        for (let j = 0; j < row.length; j++) {
+          if (pattern[i][j]) {
+            continue;
+          }
+          let tmp = clone(pattern);
+          //在棋盘中寻找空位放置棋子
+          tmp[i][j] = _gamer;
+          //利用递归方法找出最优的策略
+          let r = bestChoice(tmp, 3 - _gamer, depth+1).result;
+          if (- r > result) {
+            result = - r;
+            point = [i, j];
+          }
+          if (result === 1) {
+            break outer;
+          }
+        }
+      }
+      //result：0为和，输-1，胜+1
+      return {
+        point,
+        result: point ? result : 0, //没有结果
+      };
+    }
+
+    window.addEventListener('load', function () {
+      show();
+      //console.log(bestChoice(chessboard, gamer));
+    });
+  </script>
+
+</head>
+
+<body>
+  <div id="board"></div>
+</body>
+
+</html>

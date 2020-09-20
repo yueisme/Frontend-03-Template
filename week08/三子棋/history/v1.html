@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <title>TicTacToe</title>
+  <style>
+    #board {
+      width: 300px;
+      height: 300px;
+      display: flex;
+      flex-wrap: wrap;
+    }
+
+    #board .pieces {
+      width: 100px;
+      height: 100px;
+      background-color: #4caf50;
+      border: 2px solid white;
+      box-sizing: border-box;
+      display: inline-flex;
+      vertical-align: middle;
+      justify-content: center;
+      align-items: center;
+      font-size: 50px;
+    }
+  </style>
+  <script>
+    let chessboard = [
+      [0, 0, 0],
+      [0, 0, 0],
+      [1, 0, 2],
+    ];
+    let gamer = 1;
+    function show() {
+      let board = document.getElementById('board');
+      let frag = document.createDocumentFragment();
+      for (let i = 0; i < chessboard.length; i++) {
+        let row = chessboard[i];
+        for (let j = 0; j < row.length; j++) {
+          let cell = row[j];
+          let ele = document.createElement('div');
+          if (cell !== 0) {
+            let txt = cell === 2 ? "❌" : "⭕️";
+            ele.appendChild(document.createTextNode(txt));
+          }
+          ele.classList.add('pieces');
+          ele.addEventListener('click', () => { place(i, j); });
+          frag.append(ele);
+        }
+      }
+      board.innerHTML = '';
+      board.append(frag);
+    }
+    function place(x, y) {
+      console.log(x, y);
+      chessboard[x][y] = gamer;
+      show();
+      if (check()) {
+        let txt = gamer === 2 ? "❌" : "⭕️";
+        alert(txt + ' is winner');
+      }
+      gamer = 3 - gamer;
+    }
+    function check() {
+
+      for (let i = 0; i < chessboard.length; i++) {
+        let iswin = chessboard[i].every(c => c === gamer);
+        if (iswin) {
+          return true;
+        }
+      }
+
+      for (let j = 0; j < chessboard.length; j++) {
+        let iswin = true;
+        for (let i = 0; i < chessboard.length; i++) {
+          if (chessboard[i][j] !== gamer) {
+            iswin = false;
+          }
+        }
+        if (iswin) {
+          return true;
+        }
+      }
+
+      {
+        let iswin = true;
+        for (let i = 0; i < chessboard.length; i++) {
+          if (chessboard[i][2 - i] !== gamer) {
+            iswin = false;
+          }
+        }
+        if (iswin) {
+          return true;
+        }
+      }
+
+      {
+        let iswin = true;
+        for (let i = 0; i < chessboard.length; i++) {
+          if (chessboard[i][i] !== gamer) {
+            iswin = false;
+          }
+        }
+        if (iswin) {
+          return true;
+        }
+      }
+    }
+
+    window.addEventListener('load', function () {
+      show();
+    });
+  </script>
+
+</head>
+
+<body>
+  <div id="board">
+  </div>
+
+</body>
+
+</html>

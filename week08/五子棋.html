@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <title>五子棋</title>
+  <style>
+    #board {
+      width: 500px;
+      height: 500px;
+      display: flex;
+      flex-wrap: wrap;
+    }
+
+    #board .pieces {
+      width: 100px;
+      height: 100px;
+      background-color: #4caf50;
+      border: 2px solid white;
+      box-sizing: border-box;
+      display: inline-flex;
+      vertical-align: middle;
+      justify-content: center;
+      align-items: center;
+      font-size: 50px;
+    }
+  </style>
+  <script>
+    let chessboard = [
+      0, 0, 0, 0, 0,
+      0, 0, 0, 0, 0,
+      0, 0, 0, 0, 0,
+      0, 0, 0, 0, 0,
+      0, 0, 0, 0, 0,
+    ];
+    let gamer = 1;
+
+    function show() {
+      let board = document.getElementById('board');
+      let frag = document.createDocumentFragment();
+      for (let i = 0; i < 5; i++) {
+        for (let j = 0; j < 5; j++) {
+          let index = j + i * 5;
+          let cell = chessboard[index];
+          let ele = document.createElement('div');
+          if (cell !== 0) {
+            let txt = cell === 2 ? "❌" : "⭕️";
+            ele.appendChild(document.createTextNode(txt));
+          }
+          ele.classList.add('pieces');
+          ele.addEventListener('click', () => { userMove(index); });
+          frag.append(ele);
+        }
+      }
+      board.innerHTML = '';
+      board.append(frag);
+    }
+
+    function userMove(index) {
+      if (chessboard[index]) {
+        return;
+      }
+      chessboard[index] = gamer;
+      show();
+      if (check(chessboard, gamer)) {
+        let txt = gamer === 2 ? "❌" : "⭕️";
+        alert(txt + ' is winner');
+        //document.location.reload()
+      }
+      gamer = 3 - gamer;
+      if (willWin(chessboard, gamer)) {
+        let txt = gamer === 2 ? "❌" : "⭕️";
+        console.log(txt + ' will win');
+      }
+      document.body.style.cursor = 'wait';
+      setTimeout(function () {
+        aiMove();
+      }, 2);
+    }
+
+    function aiMove() {
+      console.time('ai');
+      let choice = bestChoice(chessboard, gamer);
+      console.timeEnd('ai');
+      if (choice.point) {
+        let index = choice.point[1] + choice.point[0] * 5;
+        chessboard[index] = gamer;
+      }
+      show();
+      if (check(chessboard, gamer)) {
+        let txt = gamer === 2 ? "❌" : "⭕️";
+        alert(txt + ' is winner');
+      }
+      gamer = 3 - gamer;
+      document.body.style.cursor = 'auto';
+    }
+
+    function check(pattern, _gamer) {
+
+      for (let i = 0; i < 5; i++) {
+        let index = 0 + i * 5;
+        let iswin = pattern.slice(index, index + 5).every(c => c === _gamer);
+        if (iswin) {
+          return true;
+        }
+      }
+
+      for (let j = 0; j < 5; j++) {
+        let iswin = true;
+        for (let i = 0; i < 5; i++) {
+          let index = j + i * 5;
+          if (pattern[index] !== _gamer) {
+            iswin = false;
+          }
+        }
+        if (iswin) {
+          return true;
+        }
+      }
+
+      {
+        let iswin = true;
+        for (let i = 0; i < 5; i++) {
+          let index = (4 - i) + i * 5;
+          if (pattern[index] !== _gamer) {
+            iswin = false;
+          }
+        }
+        if (iswin) {
+          return true;
+        }
+      }
+
+      {
+        let iswin = true;
+        for (let i = 0; i < 5; i++) {
+          let index = i + i * 5;
+          if (pattern[index] !== _gamer) {
+            iswin = false;
+          }
+        }
+        if (iswin) {
+          return true;
+        }
+      }
+    }
+
+    function clone(pattern) {
+      return Object.create(pattern);
+    }
+
+    //本次下子能否获胜
+    function willWin(pattern, _gamer) {
+      for (let i = 0; i < 5; i++) {
+        for (let j = 0; j < 5; j++) {
+          let index = j + i * 5;
+          if (pattern[index]) {
+            continue;
+          }
+          let tmp = clone(pattern);
+          tmp[index] = _gamer;
+          if (check(tmp, _gamer)) {
+            //console.log(i, j);
+            return [i, j];
+          }
+        }
+      }
+      return null;
+    }
+
+    /*
+      为_gamer做出最佳决策，返回最合适的落子位置
+    */
+    function bestChoice(pattern, _gamer, depth = 1) {
+      //console.log('depth', depth);
+
+      //能否直接获胜，第一层策略
+      let p = willWin(pattern, _gamer);
+      if (p) {
+        return {
+          point: p,
+          result: 1,
+        };
+      }
+      if (depth > 5) {
+        return {
+          point: null,
+          result: 0,
+        }
+      }
+      //第二层策略，查找别输的位置
+      let result = -2;
+      let point = null;
+
+      outer: for (let i = 0; i < 5; i++) {
+        inner: for (let j = 0; j < 5; j++) {
+          let index = j + i * 5;
+          if (pattern[index]) {
+            continue;
+          }
+          let tmp = clone(pattern);
+          //在棋盘中寻找空位放置棋子
+          tmp[index] = _gamer;
+          //利用递归方法找出最优的策略
+          let r = bestChoice(tmp, 3 - _gamer, depth + 1).result;
+          if (- r > result) {
+            result = - r;
+            point = [i, j];
+          }
+
+          if (result === 1) {
+            break outer;
+          }
+          if(depth>1 && result >= 0){
+            break inner;
+          }
+        }
+      }
+      //result：0为和，输-1，胜+1
+      return {
+        point,
+        result: point ? result : 0, //没有结果
+      };
+    }
+
+    window.addEventListener('load', function () {
+      show();
+      //console.log(bestChoice(chessboard, gamer));
+    });
+  </script>
+
+</head>
+
+<body>
+  <h2>五子棋-未完成</p>
+    <div id="board"></div>
+
+</body>
+
+</html>
