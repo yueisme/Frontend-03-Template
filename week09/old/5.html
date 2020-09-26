@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width">
+  <title>path</title>
+  <style>
+    .cell {
+      display: inline-block;
+      width: 6px;
+      height: 6px;
+      line-height: 7px;
+      /*not work*/
+      background-color: gray;
+      border-bottom: solid 1px white;
+      border-right: solid 1px white;
+      vertical-align: middle;
+    }
+
+    #container {
+      width: 701px;
+      display: flex;
+      flex-wrap: wrap;
+    }
+  </style>
+
+</head>
+
+<body>
+  <div id="container"></div>
+  <button onclick="localStorage['map'] = JSON.stringify(map.map(e=>e===1?1:0))">save</button>
+  <script>
+    let map = localStorage['map'] ? JSON.parse(localStorage['map']) : new Array(10000).fill(0);
+    let container = document.getElementById('container');
+    let frag = document.createDocumentFragment();
+    const LINE_SIZE = 100;
+    for (let y = 0; y < LINE_SIZE; y++) {
+      for (let x = 0; x < LINE_SIZE; x++) {
+        let ele = document.createElement('div');
+        ele.classList.add('cell');
+        if (map[LINE_SIZE * y + x] == 1) {
+          ele.style.backgroundColor = 'black';
+        }
+        ele.addEventListener('mousemove', () => {
+          if (mousedown) {
+            if (clear) {
+              ele.style.backgroundColor = '';
+              map[LINE_SIZE * y + x] = 0;
+            }
+            else {
+              ele.style.backgroundColor = 'black';
+              map[LINE_SIZE * y + x] = 1;
+            }
+          }
+        });
+        frag.append(ele);
+      }
+    }
+    container.append(frag);
+
+    let mousedown = false;
+    let clear = false;
+    document.addEventListener('mousedown', e => {
+      mousedown = true;
+      clear = e.which === 3;
+    });
+    document.addEventListener('mouseup', e => {
+      mousedown = false;
+    });
+    container.addEventListener('contextmenu', e => {
+      e.preventDefault();
+    });
+
+    async function findPath(map, start, end) {
+      if (map[end[1] * LINE_SIZE + end[0]] === 1) {
+        console.error('不可到达');
+        return null;
+      }
+      let queue = [start];
+      let table = Object.create(map);
+      let container = document.getElementById('container');
+      async function insert(x, y, from) {
+        if (x < 0 || x >= LINE_SIZE || y < 0 || y >= LINE_SIZE) {
+          return;
+        }
+        let index = y * LINE_SIZE + x;
+        if (map[index]) {
+          return;
+        }
+        await sleep(5);
+        container.children[index].style.backgroundColor = 'lightgreen';
+        table[index] = from;
+        map[index] = 2;
+        queue.push([x, y]);
+      }
+      while (queue.length) {
+        let [x, y] = queue.shift(); //shift会取出数组第一个元素
+        //console.log(x, y);
+        if (x === end[0] && y === end[1]) {
+          let path = [];
+          let index;
+          while (x != start[0] || y != start[1]) {
+            index = y * LINE_SIZE + x;
+            path.push(map[index]);
+            [x, y] = table[index];
+            container.children[index].style.backgroundColor = 'red';
+            await sleep(30);
+          }
+          console.log(container.children[index]);
+          return path;
+        }
+        await insert(x - 1, y, [x, y]);
+        await insert(x + 1, y, [x, y]);
+        await insert(x, y - 1, [x, y]);
+        await insert(x, y + 1, [x, y]);
+
+        await insert(x - 1, y - 1, [x, y]);
+        await insert(x + 1, y + 1, [x, y]);
+        await insert(x + 1, y - 1, [x, y]);
+        await insert(x - 1, y + 1, [x, y]);
+      }
+      return null;
+    }
+
+    function sleep(t) {
+      return new Promise((resolve, reject) => {
+        setTimeout(resolve, t);
+      });
+    }
+
+    class Sorted {
+      constructor(data, compare) {
+        this.data = data.slice();
+        this.compare = compare || ((a, b) => a - b);
+      }
+      give(g) {
+        this.data.push(g);
+      }
+      take() {
+        if (!this.data.length) {
+          return;
+        }
+        let min = this.data[0];
+        let minIndex = 0;
+
+        for (let i = 1; i < this.data.length; i++) {
+          if (this.compare(this.data[i], min) < 0) {
+            min = this.data[i];
+            minIndex = i;
+          }
+        }
+        this.data[minIndex] = this.data[this.data.length - 1];
+        this.data.pop();
+        return min;
+      }
+    }
+  </script>
+</body>
+
+</html>

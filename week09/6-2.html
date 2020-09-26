@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width">
+  <title>path</title>
+  <style>
+    .cell {
+      display: inline-block;
+      width: 6px;
+      height: 6px;
+      line-height: 7px;
+      /*not work*/
+      background-color: gray;
+      border-bottom: solid 1px white;
+      border-right: solid 1px white;
+      vertical-align: middle;
+    }
+
+    #container {
+      width: 701px;
+      display: flex;
+      flex-wrap: wrap;
+    }
+  </style>
+
+</head>
+
+<body>
+  <div id="container"></div>
+  <button onclick="localStorage['map'] = JSON.stringify(map.map(e=>e===1?1:0))">save</button>
+  <script>
+    let map = localStorage['map'] ? JSON.parse(localStorage['map']) : new Array(10000).fill(0);
+    let container = document.getElementById('container');
+    let frag = document.createDocumentFragment();
+    const LINE_SIZE = 100;
+    for (let y = 0; y < LINE_SIZE; y++) {
+      for (let x = 0; x < LINE_SIZE; x++) {
+        let ele = document.createElement('div');
+        ele.classList.add('cell');
+        if (map[LINE_SIZE * y + x] == 1) {
+          ele.style.backgroundColor = 'black';
+        }
+        ele.addEventListener('mousemove', () => {
+          if (mousedown) {
+            if (clear) {
+              ele.style.backgroundColor = '';
+              map[LINE_SIZE * y + x] = 0;
+            }
+            else {
+              ele.style.backgroundColor = 'black';
+              map[LINE_SIZE * y + x] = 1;
+            }
+          }
+        });
+        ele.addEventListener('click', (e) => {
+          if (!e.target.astar) {
+            return;
+          }
+          console.log(e.target.astar);
+        });
+        frag.append(ele);
+      }
+    }
+    container.append(frag);
+
+    let mousedown = false;
+    let clear = false;
+    document.addEventListener('mousedown', e => {
+      mousedown = true;
+      clear = e.which === 3;
+    });
+    document.addEventListener('mouseup', e => {
+      mousedown = false;
+    });
+    container.addEventListener('contextmenu', e => {
+      e.preventDefault();
+    });
+
+    async function findPath(map, start, end) {
+
+      if (map[end[1] * LINE_SIZE + end[0]] === 1) {
+        console.error('不可到达');
+        return null;
+      }
+
+      let closeSet = new Sorted([]);
+      let queue = new Sorted([start], (a, b, table) => {
+        let aa = table[a[1] * LINE_SIZE + a[0]];
+        let bb = table[b[1] * LINE_SIZE + b[0]];
+        aa = aa.f || 0;
+        bb = bb.f || 0;
+        return aa - bb;
+      });
+      let table = Object.create(map);
+
+      function distance(p) {
+        return (Math.abs(p[0] - end[0]) + Math.abs(p[1] - end[1])) * 10;
+
+        //return (p[0] - end[0]) ** 2 + (p[1] - end[1]) ** 2;
+      }
+
+      async function insert(x, y, from) {
+        if (x < 0 || x >= LINE_SIZE || y < 0 || y >= LINE_SIZE) {
+          return;
+        }
+        let index = y * LINE_SIZE + x;
+
+        if (closeSet.hasPoint(x, y) || map[index] === 1) {
+          return;
+        }
+
+        let h = distance([x, y]);
+        let g = (table[from[1] * LINE_SIZE + from[0]].g || 0) + ((x - from[0] === 0 || y - from[1] === 0) ? 10 : 14);
+
+        if (queue.hasPoint(x, y)) {
+          if (g < (table[index].g || 0)) {
+            table[index] = from;
+            table[index].g = g;
+            table[index].h = h;
+            table[index].f = g + h;
+            container.children[index].astar = table[index];
+            await sleep(5);
+            return;
+          }
+        }
+        else {
+          table[index] = from; //change
+          table[index].g = g;
+          table[index].h = h;
+          table[index].f = g + h;
+          map[index] = 2;
+          queue.give([x, y]);
+          container.children[index].astar = table[index];
+          await sleep(5);
+        }
+        /*if (map[index]===2) {
+          if (g < table[index].g) {
+              table[index].h = h;
+              table[index].g = g;
+              table[index].f = g+h;
+              table[index] = from;
+              //queue.give([x, y]);
+              await sleep(5);
+              return;
+          }
+          
+        }*/
+
+
+      }
+
+      while (queue.length) {
+        let [x, y] = queue.take(table); //shift会取出数组第一个元素
+        //console.log(x, y);
+        if (x === end[0] && y === end[1]) {
+          let path = [];
+          let index;
+          while (x != start[0] || y != start[1]) {
+            index = y * LINE_SIZE + x;
+            path.push(table[index]);
+            [x, y] = table[index];
+            container.children[index].style.backgroundColor = 'red';
+            await sleep(20);
+          }
+          container.children[start[1] * LINE_SIZE + start[0]].style.backgroundColor = 'red';
+          console.log(container.children[end[1] * LINE_SIZE + end[0]]);
+          return path.reverse();
+        }
+        closeSet.give([x, y]);
+        container.children[y * LINE_SIZE + x].style.backgroundColor = 'lightgreen';
+        await insert(x - 1, y, [x, y]);
+        await insert(x + 1, y, [x, y]);
+        await insert(x, y - 1, [x, y]);
+        await insert(x, y + 1, [x, y]);
+
+        await insert(x - 1, y - 1, [x, y]);
+        await insert(x + 1, y + 1, [x, y]);
+        await insert(x + 1, y - 1, [x, y]);
+        await insert(x - 1, y + 1, [x, y]);
+      }
+      console.log('path no found');
+      return null;
+    }
+
+    function sleep(t) {
+      return new Promise((resolve, reject) => {
+        setTimeout(resolve, t);
+      });
+    }
+
+    class Sorted {
+      constructor(data, compare) {
+        this.data = data.slice();
+        this.compare = compare || ((a, b) => a - b);
+      }
+      give(g) {
+        this.data.push(g);
+      }
+      take(table) {
+        if (!this.data.length) {
+          return;
+        }
+        let min = this.data[0];
+        let minIndex = 0;
+
+        for (let i = 1; i < this.data.length; i++) {
+          if (this.compare(this.data[i], min, table) < 0) {
+            min = this.data[i];
+            minIndex = i;
+          }
+        }
+        this.data[minIndex] = this.data[this.data.length - 1];
+        this.data.pop();
+        return min;
+      }
+      get length() {
+        return this.data.length;
+      }
+      hasPoint(x, y) {
+        return !!this.data.find(point => point[0] === x && point[1] === y);
+      }
+    }
+  </script>
+</body>
+
+</html>

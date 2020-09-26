@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width">
+  <title>path</title>
+  <style>
+    .cell {
+      display: inline-block;
+      width: 6px;
+      height: 6px;
+      line-height: 7px;
+      /*not work*/
+      background-color: gray;
+      border-bottom: solid 1px white;
+      border-right: solid 1px white;
+      vertical-align: middle;
+    }
+
+    #container {
+      width: 701px;
+      display: flex;
+      flex-wrap: wrap;
+    }
+  </style>
+
+</head>
+
+<body>
+  <div id="container"></div>
+  <button onclick="localStorage['map'] = JSON.stringify(map)">save</button>
+  <script>
+    let map = localStorage['map'] ? JSON.parse(localStorage['map']) : new Array(10000).fill(0);
+    let container = document.getElementById('container');
+    let frag = document.createDocumentFragment();
+    for (let y = 0; y < 100; y++) {
+      for (let x = 0; x < 100; x++) {
+        let ele = document.createElement('div');
+        ele.classList.add('cell');
+        if (map[100 * y + x] == 1) {
+          ele.style.backgroundColor = 'black';
+        }
+        ele.addEventListener('mousemove', () => {
+          if (mousedown) {
+            if (clear) {
+              ele.style.backgroundColor = '';
+              map[100 * y + x] = 0;
+            }
+            else {
+              ele.style.backgroundColor = 'black';
+              map[100 * y + x] = 1;
+            }
+          }
+        });
+        frag.append(ele);
+      }
+    }
+    container.append(frag);
+
+    let mousedown = false;
+    let clear = false;
+    document.addEventListener('mousedown', e => {
+      mousedown = true;
+      clear = e.which === 3;
+    });
+    document.addEventListener('mouseup', e => {
+      mousedown = false;
+    });
+    document.addEventListener('contextmenu', e => {
+      e.preventDefault();
+    });
+
+    function findPath(map, start, end) {
+      let queue = [start];
+      function insert(x, y) {
+        if (x < 0 || x >= 100 || y < 0 || y >= 100) {
+          return;
+        }
+        let index = y * 100 + x;
+        if (map[index]) {
+          return;
+        }
+        map[index] = 2;
+        queue.push([x, y]);
+      }
+      while (queue.length) {
+        let [x, y] = queue.shift(); //shift会取出数组第一个元素
+        console.log(x, y);
+        if (x === end[0] && y === end[1]) {
+          return true;
+        }
+        insert(x - 1, y);
+        insert(x + 1, y);
+        insert(x, y - 1);
+        insert(x, y + 1);
+      }
+      return false;
+    }
+
+  </script>
+</body>
+
+</html>
