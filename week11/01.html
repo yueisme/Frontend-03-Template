@@ -1,0 +1,59 @@
+<script>
+  const COUNTER = Symbol('$');
+
+  class Tire {
+    constructor() {
+      this.root = Object.create(null);
+    }
+    insert(word) {
+      //node表示节点位置的引用
+      let node = this.root;
+      for (const char of word) {
+        if (!node[char]) {
+          //建立树的子节点
+          node[char] = Object.create(null);
+        }
+        //改变节点的引用
+        node = node[char];
+      }
+      if (!(COUNTER in node)) {
+        //树末尾做一个计数标记
+        node[COUNTER] = 0;
+      }
+      node[COUNTER]++; //增加计数
+    }
+    most() {
+      let max = 0;
+      let maxWord = null;
+      let visit = (node, word) => {
+        if (node[COUNTER] && node[COUNTER] > max) {
+          max = node[COUNTER];
+          maxWord = word;
+        }
+        for (let p in node) {
+          visit(node[p], word + p);
+        }
+      };
+      visit(this.root, '');
+      console.log(maxWord, max);
+      return maxWord;
+    }
+  }
+
+  function randomWord(len) {
+    let s = '';
+    const charOffset = 97;//'a'.charCodeAt(0);
+    for (let i = 0; i < len; i++) {
+      s += String.fromCharCode(Math.floor(Math.random() * 26) + charOffset);
+    }
+    //debugger;
+    return s;
+  }
+
+  let t = new Tire();
+
+  for (let i = 0; i < 100000; i++) {
+    t.insert(randomWord(4));
+  }
+  t.most();
+</script>

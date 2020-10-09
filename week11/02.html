@@ -1,0 +1,56 @@
+<script>
+
+  function kmp(source, pattern) {
+
+    let table = new Array(pattern.length).fill(0);
+
+    {
+      //table是指导匹配时跳转的表
+      let i = 1;
+      let j = 0; //重复的字数，表示前面有多少个字符是和字符串头部相同的
+      while (i < pattern.length) {
+        
+        if (pattern[i] === pattern[j]) {
+          i++;
+          j++;
+          table[i] = j;
+        }
+        else {
+          if (j > 0) {
+            j = table[j];
+          }
+          else {
+            i++;
+          }
+        }
+      }
+      console.log(table);
+    }
+
+    {
+      let i = 0;
+      let j = 0;
+      while (i < source.length) {
+        if (pattern[j] == source[i]) {
+          i++;
+          j++;
+        }
+        else {
+          if (j > 0) {
+            j = table[j];
+          }
+          else {
+            i++;
+          }
+        }
+        if (j === pattern.length) {
+          return true;
+        }
+      }
+    }
+    return false;
+
+  }
+
+  console.log(kmp('abcdabcdabcex', 'abcdabce'));
+</script>
