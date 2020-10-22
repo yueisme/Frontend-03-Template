@@ -1,0 +1,104 @@
+<body>
+  <div style="display: inline-block">
+    <div>R: <input id="r" type="range" min="0" max="255" /></div>
+    <div>G: <input id="g" type="range" min="0" max="255" /></div>
+    <div>B: <input id="b" type="range" min="0" max="255" /></div>
+  </div>
+  <div
+    id="c"
+    style="
+      width: 100px;
+      height: 100px;
+      display: inline-block;
+      vertical-align: top;
+    "
+  ></div>
+</body>
+
+<script>
+  let object = {
+    r: 0,
+    g: 0,
+    b: 0,
+  };
+
+  function reactive(object) {
+    if (reactivties.has(object)) {
+      return reactivties.get(object);
+    }
+    let px = new Proxy(object, {
+      set(obj, prop, val) {
+        // console.log(...arguments);
+        obj[prop] = val;
+        if (callbacks.get(obj)) {
+          if (callbacks.get(obj).get(prop)) {
+            for (let callback of callbacks.get(obj).get(prop)) {
+              callback();
+            }
+          }
+          return;
+        }
+      },
+      get(obj, prop) {
+        // console.log(...arguments);
+        let reactivity = [obj, prop];
+        usedReactivties.push(reactivity);
+        if (typeof obj[prop] === "object") {
+          return reactive(obj[prop]);
+        }
+        return obj[prop];
+      },
+    });
+    reactivties.set(object, px);
+    return px;
+  }
+
+  let reactivties = new Map(); // 保存proxy后的对象，全局存储
+  let callbacks = new Map(); // 保存callback
+  let usedReactivties = []; // 保存effct相关的callbak
+
+  function effect(callback) {
+    usedReactivties = [];
+    callback(); //利用callback里面的`console.log(p.a)`会访问get hook的特性，收集回调
+    // console.log(usedReactivties);
+
+    //创建了map做索引
+    for (let reactivity of usedReactivties) {
+      // reactivity[0]为被proxy的原object
+      // reactivity[1]被访问的object prop
+      let [obj, prop] = reactivity;
+
+      if (!callbacks.has(obj)) {
+        callbacks.set(obj, new Map());
+      }
+      if (!callbacks.get(obj).has(prop)) {
+        callbacks.get(obj).set(prop, []);
+      }
+      callbacks.get(obj).get(prop).push(callback);
+    }
+  }
+
+  let p = reactive(object);
+
+  effect(() => {
+    let { r, g, b } = p;
+    document.getElementById("r").value = r;
+    document.getElementById("g").value = g;
+    document.getElementById("b").value = b;
+    document.getElementById("c").style.backgroundColor = `rgb(${r},${g},${b})`;
+  });
+
+  document
+    .getElementById("r")
+    .addEventListener("input", (e) => (p.r = Number(e.target.value)));
+  document
+    .getElementById("g")
+    .addEventListener("input", (e) => (p.g = Number(e.target.value)));
+  document
+    .getElementById("b")
+    .addEventListener("input", (e) => (p.b = Number(e.target.value)));
+
+  // console.log(p.a);
+  // p.a = 9;
+  // console.log(p.a);
+</script>

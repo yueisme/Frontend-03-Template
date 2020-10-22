@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>drag</title>
+    <style>
+      body {
+        user-select: none;
+      }
+    </style>
+  </head>
+
+  <body>
+    <div id="container">
+      Lorem ipsum dolor sit amet, consectetur adipiscing elit. Phasellus dictum urna sodales suscipit ultrices. Praesent
+      in urna auctor, sollicitudin justo id, auctor sapien. Cras gravida placerat pulvinar. Cras leo est, egestas nec
+      porta sed, dapibus a felis. Vestibulum mollis tempor sodales. Vestibulum mattis non risus quis dictum. Ut vitae
+      euismod risus, in finibus ante. Mauris pulvinar, tortor id hendrerit consectetur, nisl lorem congue nisi, vel
+      vulputate elit ante eu enim. In maximus at leo vitae fringilla. Sed pellentesque rhoncus tempus. Donec porta aliquet
+      nisl. Aliquam pretium molestie consequat. Integer pulvinar velit non urna placerat efficitur. Nulla dui neque,
+      ullamcorper at massa sed, tincidunt accumsan nunc. Pellentesque vitae justo in leo varius pharetra id ut felis.
+    </div>
+
+    <div id="dragable" style="width: 100px; height: 100px; background-color: darkgoldenrod; display: inline-block"></div>
+    <script>
+      let dragable = document.getElementById("dragable");
+
+      //let baseX = 0,
+      //  baseY = 0;
+      dragable.addEventListener("mousedown", function (e) {
+        if (e.button !== 0) {
+          return;
+        }
+        let { clientX, clientY } = e;
+        function move(event) {
+          let range = getNearest(event.clientX, event.clientY);
+          range.insertNode(dragable);
+          // dragable.style.transform = `translate(${baseX + event.clientX - clientX}px,${baseY + event.clientY - clientY}px)`;
+        }
+        function up(event) {
+          //baseX = baseX + event.clientX - clientX;
+          //baseY = baseY + event.clientY - clientY;
+          document.removeEventListener("mousemove", move);
+          document.removeEventListener("mouseup", up);
+        }
+        document.addEventListener("mouseup", up);
+        document.addEventListener("mousemove", move);
+      });
+
+      let container = document.getElementById("container");
+      let ranges = [];
+      for (let i = 0; i < container.childNodes[0].textContent.length; i++) {
+        let range = document.createRange();
+        //按单个文字设置range
+        range.setStart(container.childNodes[0], i);
+        range.setEnd(container.childNodes[0], i);
+        ranges.push(range);
+      }
+
+      function getNearest(x, y) {
+        let min = Infinity;
+        let nearest;
+        for (let range of ranges) {
+          let rect = range.getBoundingClientRect();
+          let distance = (rect.x - x) ** 2 + (rect.y - y) ** 2;
+          if (distance < min) {
+            min = distance;
+            nearest = range;
+          }
+        }
+        return nearest;
+      }
+    </script>
+  </body>
+</html>

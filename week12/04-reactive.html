@@ -1,0 +1,69 @@
+<script>
+  let object = {
+    a: {
+      b: 3,
+    },
+    b: 2,
+  };
+
+  function reactive(object) {
+    if (reactivties.has(object)) {
+      return reactivties.get(object);
+    }
+    let px = new Proxy(object, {
+      set(obj, prop, val) {
+        // console.log(...arguments);
+        obj[prop] = val;
+        if (callbacks.get(obj)) {
+          if (callbacks.get(obj).get(prop)) {
+            for (let callback of callbacks.get(obj).get(prop)) {
+              callback();
+            }
+          }
+          return;
+        }
+      },
+      get(obj, prop) {
+        // console.log(...arguments);
+        usedReactivties.push([obj, prop]);
+        if (typeof obj[prop] === "object") {
+          return reactive(obj[prop]);
+        }
+        return obj[prop];
+      },
+    });
+    reactivties.set(object, px);
+    return px;
+  }
+
+  let reactivties = new Map(); //保存proxy后的对象
+  let callbacks = new Map();
+  let usedReactivties = [];
+
+  function effect(callback) {
+    usedReactivties = [];
+    callback(); //利用callback里面的`console.log(p.a)`会访问get hook的特性，收集回调
+    // console.log(usedReactivties);
+
+    //创建了map做索引
+    for (let reactivity of usedReactivties) {
+      if (!callbacks.has(reactivity[0])) {
+        callbacks.set(reactivity[0], new Map());
+      }
+      if (!callbacks.get(reactivity[0]).has(reactivity[1])) {
+        callbacks.get(reactivity[0]).set(reactivity[1], []);
+      }
+      callbacks.get(reactivity[0]).get(reactivity[1]).push(callback);
+    }
+  }
+
+  let p = reactive(object);
+
+  effect(() => {
+    console.log(p.a.b);
+  });
+
+  console.log(p.a);
+  p.a.b = 9;
+  console.log(p.a);
+</script>

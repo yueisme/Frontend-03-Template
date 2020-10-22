@@ -1,0 +1,26 @@
+<script>
+  let object = {
+    a: 1,
+    b: 2,
+  };
+
+  function reactive(object) {
+    let px = new Proxy(object, {
+      set(obj, prop, val) {
+        console.log(...arguments);
+        obj[prop] = val;
+      },
+      get(obj, prop) {
+        console.log(...arguments);
+        return obj[prop];
+      },
+    });
+    return px;
+  }
+
+  let p = reactive(object);
+
+  console.log(p.a);
+  p.a = 9;
+  console.log(p.a);
+</script>

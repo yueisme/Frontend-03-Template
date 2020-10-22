@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>drag</title>
+  </head>
+
+  <body>
+    <div id="dragable" style="width: 100px; height: 100px; background-color: darkgoldenrod; border-radius: 50%;"></div>
+    
+    <script>
+      let dragable = document.getElementById("dragable");
+
+      // window.getComputedStyle(element).transform 取出初始值更好
+      let baseX = 0,
+        baseY = 0;
+      dragable.addEventListener("mousedown", function (e) {
+        if (e.button !== 0) {
+          return;
+        }
+        let { clientX, clientY } = e;
+        function move(event) {
+          let rect = dragable.getBoundingClientRect();
+          dragable.style.transform = `translate(${baseX + event.clientX - clientX}px, ${baseY + event.clientY - clientY}px)`;
+        }
+        function up(event) {
+          baseX = baseX + event.clientX - clientX;
+          baseY = baseY + event.clientY - clientY;
+          document.removeEventListener("mousemove", move);
+          document.removeEventListener("mouseup", up);
+        }
+        document.addEventListener("mouseup", up);
+        document.addEventListener("mousemove", move);
+      });
+    </script>
+  </body>
+</html>
