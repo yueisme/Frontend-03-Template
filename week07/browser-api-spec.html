@@ -60,7 +60,7 @@
       // https://html.spec.whatwg.org/multipage/webappapis.html#windoworworkerglobalscope-mixin
       // https://html.spec.whatwg.org/multipage/imagebitmap-and-animations.html#animation-frames
       // https://html.spec.whatwg.org/multipage/webstorage.html
-      let windoworworkerglobalscope = ['origin', 'isSecureContext', 'crossOriginIsolated', 'btoa', 'atob', 'setTimeout', 'clearTimeout', 'setInterval', 'clearInterval', 'queueMicrotask', 'createImageBitmap', 'sessionStorage', 'localStorage', 'AnimationFrameProvider'];
+      let windoworworkerglobalscope = ['origin', 'isSecureContext', 'crossOriginIsolated', 'btoa', 'atob', 'setTimeout', 'clearTimeout', 'setInterval', 'clearInterval', 'queueMicrotask', 'createImageBitmap', 'sessionStorage', 'localStorage', 'requestAnimationFrame', 'cancelAnimationFrame'];
 
       names = filterOut(names, [].concat(whatwg_window_api, obsolete, windoworworkerglobalscope));
 
