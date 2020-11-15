@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>gesture</title>
+    <style type="text/css"></style>
+    <script>
+      window.addEventListener('contextmenu', e => {
+        e.preventDefault();
+      });
+    </script>
+  </head>
+<body">
+    <div id="el"></div>
+    <!-- <script  src="./gesture.js"></script> -->
+    <script type="module">
+      import {enableGesture} from './gesture.js';
+      enableGesture(document.documentElement);
+      document.documentElement.addEventListener("tap", function (event) {
+        console.log(`${event.type}`);
+        
+      });
+      document.documentElement.addEventListener("cancel", function (event) {
+        console.log(`${event.type}`);
+      });
+      document.documentElement.addEventListener("flick", function (event) {
+        console.log(`${event.type}, speed: ${event.velocity}`);
+      });
+      document.documentElement.addEventListener("press-start", function (event) {
+        console.log(`${event.type}`);
+      });
+      document.documentElement.addEventListener("press-end", function (event) {
+        console.log(`${event.type}`);
+      });
+      document.documentElement.addEventListener("pan-start", function (event) {
+        console.log(`${event.type}`);
+      });
+      document.documentElement.addEventListener("pan-move", function (event) {
+        console.log(`${event.type}`);
+      });
+      document.documentElement.addEventListener("pan-end", function (event) {
+        console.log(`${event.type}`);
+      });
+    </script>
+  </body>
+</html>
