@@ -13,7 +13,7 @@
 - `press-start` 长按屏幕（tap 0.5s后）
 - `press-end` 长按结束
 - `pan-start` pan起始事件（tap或press发生后移动了若干距离，常用`window.devicePixelRatio * 5px`）
-- `pan-move` 屏幕滑动
+- `pan` 屏幕滑动
 - `flick` (swipe) 较快速度的滑动（pan发生后）
 - `pan-end` pan结束
 
@@ -43,14 +43,14 @@
 
 在`move`事件中：
 - 判断移动距离：
-```
+```javascript
 const trigger_distance = Math.pow(window.devicePixelRatio * 5, 2);
 if (!isPan && dx ** 2 + dy ** 2 > trigger_distance) {
   // ...
 }
 ```
 - 如果移动距离达到触发值并且不是pan事件类型，触发**pan-start**事件，并关闭press定时器，设置事件类型为pan（isPan=true）
-- 如果已经是pan事件类型，触发**pan-move**事件
+- 如果已经是pan事件类型，触发**pan**事件
 
 在`end`事件中：
 - 如果是isTap，触发**tap**事件，并关闭press定时器
@@ -134,7 +134,7 @@ button移位操作的变化
 对代码功能解耦，分成监听，识别，派发3个部分。
 
 把代码按功能移到类中，按模块的方式提供使用：
-```
+```javascript
 // gesture.js
 export class Listener {};
 export class Recognizer {};
