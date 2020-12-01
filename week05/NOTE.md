@@ -1,5 +1,3 @@
-学习笔记
-
 ## CSS的语法
 
 标准文档
@@ -110,14 +108,29 @@ CSS 属性值可能是以下类型：
 
 **简单选择器**：
 
-- type
-- `*`
-- `#HASH`
-- `.class`
+- type 类型选择器
+- `*` 全体选择器
+- `#HASH` ID选择器
+- `.class` class选择器
 - `[attrib]` html属性
 - `:pseudo-classes` 伪类
 - `::pseudo-elements` 伪元素
-- `:not()`
+
+##### 选择器的命名空间：
+
+svg 和 HTML 中都有 a 元素，我们若要想区分选择 svg 中的 a 和 HTML 中的 a，就必须用带命名空间的类型选择器。
+
+**类型选择器，全体选择器，属性选择器都可以使用命名空间。使用方法是在选择器前书写`ns|`**
+
+```css
+@namespace svg url('http://www.w3.org/2000/svg');
+@namespace html url('http://www.w3.org/1999/xhtml');
+
+/* 声明之后可以区分svg还是html */
+svg|a  { stroke: red; stroke-width: 1; }
+html|a { font-size: 200%; }
+a      { font-style: italic; }
+```
 
 **复合选择器**
 
@@ -136,9 +149,18 @@ CSS 属性值可能是以下类型：
 
 同时书写不同的复杂选择器、复合选择器、简单选择器并且用逗号分隔开
 
-### 优先级
+### CSS属性优先级
 
 统计选择器数量，按不同权重乘上数字，数字越大优先级越高
+
+权重从大到小排列：
+- 行内样式
+- ID 选择器
+- class 选择器，属性选择器，伪类选择器
+- 类型选择器，伪元素选择器
+- 通用选择器`*`
+
+特例：带有`!important`的属性会高于任何普通形式的声明。
 
 > https://www.w3.org/TR/selectors-3/#specificity
 > 

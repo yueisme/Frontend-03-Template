@@ -74,7 +74,7 @@ module.exports = class extends Generator {
     );
     this.fs.copyTpl(
       this.templatePath('babel.config.json'),
-      this.destinationPath('src/babel.config.json'),
+      this.destinationPath('babel.config.json'),
     );
 	}
 };
