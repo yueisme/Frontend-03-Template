@@ -9,8 +9,18 @@ ehthumbs_vista.db
 .AppleDouble
 .LSOverride
 
+package-lock.json
+node_modules/
+.nyc_output/
+
+# Editor directories and files
 .idea
 *.iml
 *.iws
 *.ipr
-node_modules/
+.vscode
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
