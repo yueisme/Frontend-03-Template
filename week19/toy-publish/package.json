@@ -1,0 +1,27 @@
+{
+  "name": "server",
+  "version": "1.0.0",
+  "description": "",
+  "main": "server/index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "server": "node server/index.js",
+    "publish-server": "node publish-server/publish-server.js",
+    "publish-tool": "node publish-tool/publish-tool.js"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "archiver": "^5.1.0",
+    "axios": "^0.21.0",
+    "bluebird": "^3.7.2",
+    "koa": "^2.13.0",
+    "koa-bodyparser": "^4.3.0",
+    "koa-mount": "^4.0.0",
+    "koa-router": "^10.0.0",
+    "koa-static": "^5.0.0",
+    "moment": "^2.29.1",
+    "morgan": "^1.10.0",
+    "unzipper": "^0.10.11"
+  }
+}
