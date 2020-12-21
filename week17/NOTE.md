@@ -192,3 +192,5 @@ babel的配置文件`.babelrc`：
 > https://webpack.docschina.org/loaders/babel-loader/
 >
 > https://juejin.cn/post/6844903858632654856#heading-8
+>
+> https://github.com/jamiebuilds/babel-handbook/tree/master/translations/zh-Hans

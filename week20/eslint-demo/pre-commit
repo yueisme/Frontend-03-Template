@@ -1,0 +1,35 @@
+#!/usr/bin/env node
+const { ESLint } = require("eslint");
+const { exec } = require("child_process");
+const util = require("util");
+const execPromise = util.promisify(exec);
+
+console.log(process.cwd());
+
+(async function main() {
+  // 1. Create an instance.
+  const eslint = new ESLint({ fix: false });
+
+  await execPromise("git stash push -k");
+
+  // 2. Lint files.
+  const results = await eslint.lintFiles(["*.js", "*.mjs"]);
+
+  // 3. Format the results.
+  const formatter = await eslint.loadFormatter("stylish");
+  const resultText = formatter.format(results);
+
+  // 4. Output it.
+  console.log(resultText);
+
+  for (const iterator of results) {
+    if (iterator.errorCount) {
+      process.exitCode = 1;
+    }
+  }
+})().catch((error) => {
+  process.exitCode = 1;
+  console.error(error);
+}).finally(()=>{
+  return execPromise("git stash pop");
+});
